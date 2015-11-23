@@ -17,37 +17,21 @@ namespace SqlParameterTest
     {
         static void Main(string[] args)
         {
-            //Console.WriteLine("ADO method test:" + AdoConnMethod());
-            //Console.WriteLine("======");
+            Console.WriteLine("ADO method test:" + AdoConnMethod());
+            Console.WriteLine("======");
 
-            //Console.WriteLine("EntitiyFramework SqlParameter use ListCollection method test:");
-            //Console.WriteLine(EfParaListMethod());
-            //Console.WriteLine("======");
+            Console.WriteLine("EntitiyFramework SqlParameter use ListCollection method test:");
+            Console.WriteLine(EfParaListMethod());
+            Console.WriteLine("======");
 
-            //Console.WriteLine("EntitiyFramework SqlParameter Implenment method test:");
-            //Console.WriteLine(EfParaImpMethod());
-            //Console.WriteLine("======");
+            Console.WriteLine("EntitiyFramework SqlParameter Implenment method test:");
+            Console.WriteLine(EfParaImpMethod());
+            Console.WriteLine("======");
 
-            //Console.WriteLine("EntitiyFramework SqlParameter Literal method test:");
-            //Console.WriteLine(EfParaLiteralMethod());
-            //Console.WriteLine("======");
+            Console.WriteLine("EntitiyFramework SqlParameter Literal method test:");
+            Console.WriteLine(EfParaLiteralMethod());
+            Console.WriteLine("======");
 
-            string connStr;
-            string str = "msdb.dbo.sp_send_dbmail";
-            connStr = ConfigurationManager.ConnectionStrings["DBConn"].ConnectionString;
-            using (SqlConnection conn = new SqlConnection(connStr))
-            {
-                conn.Open();
-                using (SqlCommand cmd = new SqlCommand(str, conn))
-                {
-                    cmd.Parameters.Add(new SqlParameter("@profile_name", "SendMail"));
-                    cmd.Parameters.Add(new SqlParameter("@recipients", "test@test.com;test@test.com"));
-                    cmd.Parameters.Add(new SqlParameter("@subject", "ADO method 2 test"));
-                    cmd.Parameters.Add(new SqlParameter("@body", @"Hello World"));
-                    cmd.Parameters.Add(new SqlParameter("@importance", "NORMAL"));
-                    cmd.ExecuteNonQuery();
-                }
-            }
             Console.ReadKey();
         }
 
@@ -68,7 +52,7 @@ namespace SqlParameterTest
                     conn.Open();
                     using (SqlCommand cmd = new SqlCommand(str, conn))
                     {
-                        //cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.CommandType = CommandType.StoredProcedure;
 
                         // Join Parameters have multiple method, choose following any method to use, the result is the same.
                         // join parameters method 1
@@ -145,6 +129,18 @@ namespace SqlParameterTest
                     SqlDbType = SqlDbType.VarChar,
                     Value = "test@test.com;test@test.com"
                 };
+                var copy_recipients = new SqlParameter()
+                {
+                    ParameterName = "copy_recipients",
+                    SqlDbType = SqlDbType.VarChar,
+                    Value = DBNull.Value
+                };
+                var blind_copy_recipients = new SqlParameter()
+                {
+                    ParameterName = "blind_copy_recipients",
+                    SqlDbType = SqlDbType.VarChar,
+                    Value = DBNull.Value
+                };
                 var subject = new SqlParameter()
                 {
                     ParameterName = "subject",
@@ -158,6 +154,12 @@ namespace SqlParameterTest
                     SqlDbType = SqlDbType.NVarChar,
                     Value = "Hello World"
                 };
+                var body_format = new SqlParameter()
+                {
+                    ParameterName = "body_format",
+                    SqlDbType = SqlDbType.VarChar,
+                    Value = DBNull.Value
+                };
                 var importance = new SqlParameter()
                 {
                     ParameterName = "importance",
@@ -165,7 +167,7 @@ namespace SqlParameterTest
                     Size = 6,
                     Value = "NORMAL"
                 };
-                result = context.Database.ExecuteSqlCommand(queryString, profile, recipients, null, null, subject, body, null, importance);
+                result = context.Database.ExecuteSqlCommand(queryString, profile, recipients, copy_recipients, blind_copy_recipients, subject, body, body_format, importance);
             }
             return result;
         }
@@ -178,12 +180,15 @@ namespace SqlParameterTest
             int result;
             using (AdventureWorks2012Entities context = new AdventureWorks2012Entities())
             {
-                string queryString = @"EXEC msdb.dbo.sp_send_dbmail @profile_name, @recipients, @subject, @body, @importance";
+                string queryString = @"EXEC msdb.dbo.sp_send_dbmail @profile_name, @recipients, @copy_recipients, @blind_copy_recipients, @subject, @body, @body_format, @importance";
                 result = context.Database.ExecuteSqlCommand(queryString,
                     new SqlParameter("@profile_name", "SendMail"),
                     new SqlParameter("@recipients", "test@test.com;test@test.com"),
+                    new SqlParameter("@copy_recipients", DBNull.Value),
+                    new SqlParameter("@blind_copy_recipients", DBNull.Value),
                     new SqlParameter("@subject", "EntityFramework Parameters Literal Method test"),
                     new SqlParameter("@body", "Hello World"),
+                    new SqlParameter("@body_format", "HTML"),
                     new SqlParameter("@importance", "NORMAL"));
             }
             return result;
