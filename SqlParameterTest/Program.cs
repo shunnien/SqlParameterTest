@@ -34,21 +34,18 @@ namespace SqlParameterTest
 
             string connStr;
             string str = "msdb.dbo.sp_send_dbmail";
-            using (AdventureWorks2012Entities context = new AdventureWorks2012Entities())
+            connStr = ConfigurationManager.ConnectionStrings["DBConn"].ConnectionString;
+            using (SqlConnection conn = new SqlConnection(connStr))
             {
-                connStr = context.Database.Connection.ConnectionString;
-                using (SqlConnection conn = new SqlConnection(connStr))
+                conn.Open();
+                using (SqlCommand cmd = new SqlCommand(str, conn))
                 {
-                    conn.Open();
-                    using (SqlCommand cmd = new SqlCommand(str, conn))
-                    {
-                        cmd.Parameters.Add(new SqlParameter("@profile_name", "SendMail"));
-                        cmd.Parameters.Add(new SqlParameter("@recipients", "test@test.com;test@test.com"));
-                        cmd.Parameters.Add(new SqlParameter("@subject", "ADO method 2 test"));
-                        cmd.Parameters.Add(new SqlParameter("@body", @"Hello World"));
-                        cmd.Parameters.Add(new SqlParameter("@importance", "NORMAL"));
-                        cmd.ExecuteNonQuery();
-                    }
+                    cmd.Parameters.Add(new SqlParameter("@profile_name", "SendMail"));
+                    cmd.Parameters.Add(new SqlParameter("@recipients", "test@test.com;test@test.com"));
+                    cmd.Parameters.Add(new SqlParameter("@subject", "ADO method 2 test"));
+                    cmd.Parameters.Add(new SqlParameter("@body", @"Hello World"));
+                    cmd.Parameters.Add(new SqlParameter("@importance", "NORMAL"));
+                    cmd.ExecuteNonQuery();
                 }
             }
             Console.ReadKey();
